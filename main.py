@@ -11,11 +11,11 @@ from fastapi.templating import Jinja2Templates
 import os
 import urllib.request
 
-# Đường dẫn file trên server (giữ nguyên để code load model không bị lỗi)
+# Đường dẫn file trên server
 MODEL_PATH = "models/best_model.pth"
 
-# Link tải trực tiếp từ ID bạn vừa gửi
-MODEL_URL = "https://drive.google.com/uc?export=download&id=1OS-FTl2VPkivyMowiT2AY1ORUI2xe98v"
+# Link tải trực tiếp EfficientNet-B0 từ Google Drive
+MODEL_URL = "https://drive.google.com/file/d/15TpCjvSVqlNyuFy7PLNf0WbKWgXrhay_/view?usp=drive_link"
 
 def download_model():
     # Tạo thư mục models nếu chưa có
@@ -24,7 +24,8 @@ def download_model():
         
     # Nếu chưa có file model thì mới tiến hành tải
     if not os.path.exists(MODEL_PATH):
-        print("--- Đang tải model từ Google Drive (khoảng 109MB)... ---")
+        # EfficientNet-B0 nhẹ hơn nhiều, thường chỉ khoảng 15-20MB
+        print("--- Đang tải kiến trúc EfficientNet-B0 từ Google Drive... ---")
         try:
             # Tải file và lưu vào đúng đường dẫn MODEL_PATH
             urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
@@ -32,7 +33,7 @@ def download_model():
         except Exception as e:
             print(f"--- Lỗi khi tải model: {e} ---")
 
-# Gọi hàm này trước khi thực hiện lệnh load model (ví dụ: torch.load)
+# Gọi tải model trước khi chạy ứng dụng
 download_model()
 app = FastAPI()
 
@@ -41,9 +42,9 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 # --- CẤU HÌNH GIỚI HẠN ---
-MAX_FILES_ALLOWED = 20 # Đồng bộ với giới hạn ở JavaScript
+MAX_FILES_ALLOWED = 20 
 
-# Danh sách nhãn chuẩn (Style)
+# Danh sách nhãn chuẩn (19 Style)
 ART_CLASSES = [
     "Abstract_Expressionism", "Art_Nouveau_Modern", "Baroque",
     "Color_Field_Painting", "Cubism", "Early_Renaissance",
@@ -53,9 +54,9 @@ ART_CLASSES = [
     "Romanticism", "Symbolism", "Ukiyo_e"
 ]
 
-# Khởi tạo Model và Processor
+# Khởi tạo Model và Processor (Dùng kiến trúc EfficientNet-B0)
 processor = ImageProcessor()
-ai_vault = ArtivaultModel("models/best_model.pth", ART_CLASSES)
+ai_vault = ArtivaultModel(MODEL_PATH, ART_CLASSES)
 
 # --- ROUTES ---
 
@@ -65,7 +66,7 @@ async def read_root(request: Request):
 
 @app.post("/predict-batch")
 async def predict_batch(files: List[UploadFile] = File(...)):
-    # 1. Bảo vệ Server: Chặn nếu vượt quá 20 ảnh
+    # 1. Bảo vệ Server
     if len(files) > MAX_FILES_ALLOWED:
         raise HTTPException(
             status_code=400, 
@@ -82,13 +83,13 @@ async def predict_batch(files: List[UploadFile] = File(...)):
 
     # 3. Xử lý AI
     try:
-        # Tiền xử lý (Convert to Tensor)
+        # Tiền xử lý (Đảm bảo resize về 224x224 cho B0)
         batch_tensor = processor.process_batch(list_bytes)
         
         # Dự đoán
         predictions, total_time = ai_vault.predict_batch(batch_tensor)
 
-        # 4. Gộp kết quả với tên file
+        # 4. Gộp kết quả
         final_output = []
         for i in range(len(filenames)):
             final_output.append({
@@ -107,26 +108,24 @@ async def predict_batch(files: List[UploadFile] = File(...)):
 
 @app.post("/export-sorted-zip")
 async def export_sorted_zip(files: List[UploadFile] = File(...)):
-    # 1. Giới hạn tương tự để tránh lỗi Timeout hoặc tràn RAM
-    if len(files) > 100: # Cho phép export nhiều hơn predict một chút nhưng vẫn cần giới hạn
+    if len(files) > 100: 
          raise HTTPException(status_code=400, detail="Quá nhiều ảnh để đóng gói ZIP!")
 
     list_bytes = []
     for f in files:
         list_bytes.append(await f.read())
 
-    # 2. Chạy lại dự đoán để lấy style phân loại vào folder
+    # Chạy lại dự đoán
     batch_tensor = processor.process_batch(list_bytes)
     predictions, _ = ai_vault.predict_batch(batch_tensor)
 
-    # 3. Tạo file ZIP trong bộ nhớ RAM (Memory)
+    # Tạo file ZIP
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
         for i, file in enumerate(files):
             style_name = predictions[i]['style']
             filename = file.filename
             
-            # Cấu trúc: Tên_Trường_Phái / Tên_Ảnh.jpg
             zip_path = f"{style_name}/{filename}"
             zip_file.writestr(zip_path, list_bytes[i])
 
