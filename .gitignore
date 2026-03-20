@@ -1,10 +1,7 @@
-# Lờ đi file model nặng
-models/best_model.pth
-
-# Lờ đi thư mục môi trường ảo (nếu có)
-venv/
-.env
-
-# Lờ đi các file rác của Python
 __pycache__/
 *.pyc
+.env
+.venv
+env/
+venv/
+.DS_Store

@@ -1,4 +1,3 @@
-# main.py
 from fastapi import FastAPI, File, UploadFile, HTTPException, Request
 from typing import List
 from core.model_loader import ArtivaultModel
@@ -9,30 +8,16 @@ from fastapi.responses import StreamingResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import os
-import urllib.request
 
-# Đường dẫn file trên server
-# Link tải trực tiếp EfficientNet-B0 từ Google Drive
-MODEL_URL = "https://drive.google.com/file/d/15TpCjvSVqlNyuFy7PLNf0WbKWgXrhay_/view?usp=drive_link"
-MODEL_PATH = os.path.join("models", "efficientnet_b0.pth") # Đổi tên để phân biệt
-def download_model():
-    # Tạo thư mục models nếu chưa có
-    if not os.path.exists("models"):
-        os.makedirs("models")
-        
-    # Nếu chưa có file model thì mới tiến hành tải
-    if not os.path.exists(MODEL_PATH):
-        # EfficientNet-B0 nhẹ hơn nhiều, thường chỉ khoảng 15-20MB
-        print("--- Đang tải kiến trúc EfficientNet-B0 từ Google Drive... ---")
-        try:
-            # Tải file và lưu vào đúng đường dẫn MODEL_PATH
-            urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
-            print("--- Tải model thành công! ---")
-        except Exception as e:
-            print(f"--- Lỗi khi tải model: {e} ---")
+# --- CẤU HÌNH ĐƯỜNG DẪN MODEL ---
+# Đảm bảo file efficientnet_b0.pth đã nằm trong thư mục models/
+MODEL_PATH = os.path.join("models", "efficientnet_b0.pth")
 
-# Gọi tải model trước khi chạy ứng dụng
-download_model()
+# Kiểm tra sự tồn tại của file trước khi chạy App
+if not os.path.exists(MODEL_PATH):
+    print(f"--- CẢNH BÁO: Không tìm thấy file model tại {MODEL_PATH} ---")
+    print("--- Hãy đảm bảo bạn đã copy file .pth vào thư mục models/ ---")
+
 app = FastAPI()
 
 # --- CẤU HÌNH THƯ MỤC STATIC & TEMPLATES ---
@@ -40,7 +25,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 # --- CẤU HÌNH GIỚI HẠN ---
-MAX_FILES_ALLOWED = 20 
+MAX_FILES_ALLOWED = 30 
 
 # Danh sách nhãn chuẩn (19 Style)
 ART_CLASSES = [

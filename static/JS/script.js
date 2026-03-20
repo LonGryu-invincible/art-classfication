@@ -108,12 +108,9 @@ async function handleUpload(files) {
     const formData = new FormData();
     validFiles.forEach(file => {
         formData.append("files", file);
-        
-        // SỬA LỖI FOLDER: Chỉ lấy tên file cuối cùng làm Key
         const pureFileName = file.name.split('/').pop().split('\\').pop();
         const previewUrl = URL.createObjectURL(file);
         globalPreviews[pureFileName] = previewUrl; 
-        
         globalRawFiles.push(file); 
     });
 
@@ -161,8 +158,10 @@ function renderArtGrid() {
         artGrid.insertAdjacentHTML('beforeend', section);
 
         items.forEach(item => {
-            const conf = (item.confidence * 100).toFixed(1);
-            // Chuẩn hóa tên file một lần nữa khi truy xuất
+            // SỬA LỖI TẠI ĐÂY: Ép kiểu số và không nhân 100 nữa
+            const confRaw = parseFloat(item.confidence) || 0;
+            const conf = confRaw.toFixed(1);
+
             const pureName = item.filename.split('/').pop().split('\\').pop();
             const imgSrc = globalPreviews[pureName] || 'https://via.placeholder.com/300?text=Not+Found';
             
