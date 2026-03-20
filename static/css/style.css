@@ -1,0 +1,76 @@
+/* 1. Định nghĩa các biến màu chính xác từ file theme.css của Figma */
+:root {
+  --background: #0F172A;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --primary: #3b82f6;
+  --accent: #38BDF8;
+  --border: rgba(148, 163, 184, 0.2);
+  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'Inter', sans-serif;
+}
+
+/* 2. Cấu hình cơ bản */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 3. Hiệu ứng cho Card (lấy từ layer base và theme của Figma) */
+.card-figma {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+  transition: all 0.3s ease;
+}
+
+.card-figma:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* 4. Hiệu ứng cho vùng Upload (UploadZone) */
+#drop-zone {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#drop-zone.drag-over {
+  border-color: var(--accent);
+  background-color: rgba(56, 189, 248, 0.05);
+  transform: scale(1.01);
+}
+
+/* 5. Hiệu ứng Glow cho Icon (giống phần Header trong App.tsx) */
+.icon-glow {
+  position: relative;
+}
+
+.icon-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(59, 130, 246, 0.2);
+  border-radius: 0.5rem;
+  filter: blur(8px);
+  z-index: -1;
+}
+
+/* 6. Định nghĩa Typography đặc biệt */
+.font-display {
+  font-family: var(--font-serif);
+}
+
+/* 7. Animation cho trạng thái quét ảnh (Scanning) */
+@keyframes pulse-border {
+  0% { border-color: rgba(148, 163, 184, 0.2); }
+  50% { border-color: var(--primary); }
+  100% { border-color: rgba(148, 163, 184, 0.2); }
+}
+
+.scanning-active {
+  animation: pulse-border 2s infinite;
+}
