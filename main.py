@@ -8,7 +8,32 @@ import io
 from fastapi.responses import StreamingResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+import os
+import urllib.request
 
+# Đường dẫn file trên server (giữ nguyên để code load model không bị lỗi)
+MODEL_PATH = "models/best_model.pth"
+
+# Link tải trực tiếp từ ID bạn vừa gửi
+MODEL_URL = "https://drive.google.com/uc?export=download&id=1OS-FTl2VPkivyMowiT2AY1ORUI2xe98v"
+
+def download_model():
+    # Tạo thư mục models nếu chưa có
+    if not os.path.exists("models"):
+        os.makedirs("models")
+        
+    # Nếu chưa có file model thì mới tiến hành tải
+    if not os.path.exists(MODEL_PATH):
+        print("--- Đang tải model từ Google Drive (khoảng 109MB)... ---")
+        try:
+            # Tải file và lưu vào đúng đường dẫn MODEL_PATH
+            urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
+            print("--- Tải model thành công! ---")
+        except Exception as e:
+            print(f"--- Lỗi khi tải model: {e} ---")
+
+# Gọi hàm này trước khi thực hiện lệnh load model (ví dụ: torch.load)
+download_model()
 app = FastAPI()
 
 # --- CẤU HÌNH THƯ MỤC STATIC & TEMPLATES ---
