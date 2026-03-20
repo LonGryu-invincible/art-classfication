@@ -1,15 +1,14 @@
-# Các thư viện cốt lõi cho Web
-fastapi==0.103.1
-uvicorn==0.23.2
-jinja2==3.1.2
-python-multipart==0.0.6
+# Web Framework
+fastapi
+uvicorn
+jinja2
+python-multipart
 
-# Các thư viện AI (Bản CPU để nhẹ và tiết kiệm RAM)
---find-links https://download.pytorch.org/whl/cpu
-torch==2.1.0+cpu
-torchvision==0.16.0+cpu
-timm==0.9.7
+# AI Libraries (Bỏ số phiên bản cứng để Render tự chọn bản tương thích nhất)
+timm
+torch --index-url https://download.pytorch.org/whl/cpu
+torchvision --index-url https://download.pytorch.org/whl/cpu
 
-# Xử lý ảnh và dữ liệu
-pillow==10.0.1
-numpy==1.26.0
+# Image Processing
+pillow
+numpy
