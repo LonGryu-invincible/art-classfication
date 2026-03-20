@@ -12,11 +12,9 @@ import os
 import urllib.request
 
 # Đường dẫn file trên server
-MODEL_PATH = "models/best_model.pth"
-
 # Link tải trực tiếp EfficientNet-B0 từ Google Drive
 MODEL_URL = "https://drive.google.com/file/d/15TpCjvSVqlNyuFy7PLNf0WbKWgXrhay_/view?usp=drive_link"
-
+MODEL_PATH = os.path.join("models", "efficientnet_b0.pth") # Đổi tên để phân biệt
 def download_model():
     # Tạo thư mục models nếu chưa có
     if not os.path.exists("models"):
